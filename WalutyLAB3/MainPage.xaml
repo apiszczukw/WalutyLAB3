@@ -19,9 +19,9 @@
                 <TextBlock Text="Kwota przeliczona:" Margin="0,0,30,0" FontSize="14" />
                 <TextBlock x:Name="PrzeliczonaTb" Width="145" Text="0"/>
             </StackPanel>
-            <StackPanel Orientation="Horizontal" Margin="0,18.8,0,0">
-               <ListBox x:Name="WalutaWejscieLbx" />
-               <ListBox x:Name="WalutaWyjscieLbx" />
+            <StackPanel Orientation="Horizontal" Margin="0,18.8,0,0" Height="250" >
+               <ListBox x:Name="WalutaWejscieLbx" ScrollViewer.VerticalScrollBarVisibility="Visible" CanBeScrollAnchor="True" SelectedIndex="0" />
+               <ListBox x:Name="WalutaWyjscieLbx" ScrollViewer.VerticalScrollBarVisibility="Visible" CanBeScrollAnchor="True" SelectedIndex="0" />
             </StackPanel>
         </StackPanel>
 
