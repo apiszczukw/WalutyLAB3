@@ -32,34 +32,92 @@ namespace WalutyLAB3
             this.InitializeComponent();
         }
 
+
+        void Przelicz()
+        {
+            if (WalutaWejscieLbx.SelectedIndex == -1 || WalutaWyjscieLbx.SelectedIndex == -1 || KwotaTbx.Text == "")
+                return;
+
+
+            var zWaluty = WalutaWejscieLbx.SelectedItem as PozycjaTabA;
+            var naWalute = WalutaWyjscieLbx.SelectedItem as PozycjaTabA;
+
+            decimal kwota;
+
+            if (decimal.TryParse(KwotaTbx.Text, out kwota))
+            {
+                Blad.Visibility = Visibility.Collapsed;
+
+                decimal naPLN = kwota * zWaluty.Kurs;
+                decimal wynik = naPLN / naWalute.Kurs;
+
+                PrzeliczonaTb.Text = string.Format($"{wynik:f2} {naWalute.KodWaluty}");
+            }
+            else
+            {
+                Blad.Visibility = Visibility.Visible;
+            }
+        }
+
+
         private async void Grid_Loaded(object sender, RoutedEventArgs e)
         {
             var klient = new HttpClient();
 
-            var dane = await klient.GetStringAsync(new Uri(API_NBP.daneXML));
-
-            var daneXML = XDocument.Parse(dane);
-
-            foreach (var pozycja in daneXML.Descendants("pozycja"))
+            try
             {
-                var pozycjaTabA = new PozycjaTabA()
+                var dane = await klient.GetStringAsync(new Uri(API_NBP.daneXML));
+
+                var daneXML = XDocument.Parse(dane);
+
+                foreach (var pozycja in daneXML.Descendants("pozycja"))
                 {
-                    NazwaWaluty = pozycja.Element("nazwa_waluty").Value,
-                    Przelicznik = pozycja.Element("przelicznik").Value,
-                    KursSredni = pozycja.Element("kurs_sredni").Value,
-                    KodWaluty = pozycja.Element("kod_waluty").Value
+                    var pozycjaTabA = new PozycjaTabA()
+                    {
+                        NazwaWaluty = pozycja.Element("nazwa_waluty").Value,
+                        Przelicznik = pozycja.Element("przelicznik").Value,
+                        KursSredni = pozycja.Element("kurs_sredni").Value,
+                        KodWaluty = pozycja.Element("kod_waluty").Value
+                    };
+
+                    kursyWalut.Add(pozycjaTabA);
+                }
+
+                kursyWalut.Insert(0, new PozycjaTabA() { NazwaWaluty = "Polski Złoty", KodWaluty = "PLN", KursSredni = "1,0000", Przelicznik = "1" });
+
+
+                WalutaWejscieLbx.ItemsSource = kursyWalut;
+                WalutaWyjscieLbx.ItemsSource = kursyWalut;
+            }
+            catch
+            {
+
+                var message = new ContentDialog()
+                {
+                    Title = "Błąd",
+                    Content = "Nie udało się pobrać bieżących danych z NBP\nSpróbuj później",
+                    CloseButtonText = "Zamknij"
+
                 };
 
-                kursyWalut.Add(pozycjaTabA);
+                await message.ShowAsync();
+
+                Application.Current.Exit();
             }
 
-            kursyWalut.Insert(0, new PozycjaTabA() { NazwaWaluty = "Polski Złoty", KodWaluty = "PLN", KursSredni = "1,0000", Przelicznik = "1" });
-
-
-            WalutaWejscieLbx.ItemsSource = kursyWalut;
-            WalutaWyjscieLbx.ItemsSource = kursyWalut;
-
         }
-        
+
+        private void KwotaTbx_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            Przelicz();
+        }
+
+
+        private void Waluta_Changed(object sender, SelectionChangedEventArgs e)
+        {
+            Przelicz();
+        }
+
+      
     }
 }
